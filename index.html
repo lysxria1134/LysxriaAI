@@ -206,30 +206,7 @@
     </div>
 
     <script>
-        // --- GUI VE SİSTEM YÖNETİMİ ---
-        const authManager = {
-            register: () => {
-                const name = document.getElementById('reg-name').value;
-                const mail = document.getElementById('reg-mail').value;
-                if(name && mail) {
-                    localStorage.setItem('user', JSON.stringify({name, mail}));
-                    authManager.check();
-                }
-            },
-            check: () => {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if(user) {
-                    document.getElementById('auth-overlay').style.display = 'none';
-                    document.getElementById('p-display-name').innerText = user.name;
-                    document.getElementById('p-display-mail').innerText = user.mail;
-                }
-            },
-            logout: () => {
-                localStorage.removeItem('user');
-                location.reload();
-            }
-        };
- 
+        
                 // Input ve Kayıt ekranı çevirileri
                 document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
                 document.getElementById('reg-name').placeholder = isTr ? 'İsim' : 'Name';

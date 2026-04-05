@@ -19,7 +19,7 @@ async function sendMessage() {
     input.style.height = 'auto';
 
     try {
-        const res = await fetch('http://localhost:11434/api/generate', {
+        const res = await fetch('https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate', {
             method: 'POST',
             body: JSON.stringify({ model: 'llama3', prompt: val, stream: false })
         });

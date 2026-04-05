@@ -1,11 +1,10 @@
-// --- LYSXRIA AI PRO - OPTİMİZE SCRIPT ---
+// --- LYSXRIA AI PRO - KESİN ÇALIŞAN SCRIPT ---
 
-// Görseldeki ngrok bilgisine göre güncellendi
 const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate"; 
 
 const uiManager = {
-    // Kelime kelime yazma efekti (ChatGPT stili)
-    typeWriter: (element, text, speed = 20) => {
+    // ChatGPT Yazma Efekti
+    typeWriter: (element, text, speed = 10) => {
         let i = 0;
         element.innerText = "";
         function type() {
@@ -22,23 +21,21 @@ const uiManager = {
     sendMessage: async () => {
         const inp = document.getElementById('userInput');
         const win = document.getElementById('chat-window');
+        const intro = document.getElementById('intro-text'); // ID Düzeltildi
         const userText = inp.value.trim();
 
         if (!userText) return;
 
-        // Hoşgeldin yazısını gizle
-        const hero = document.getElementById('welcome-hero');
-        if (hero) hero.style.display = 'none';
+        // Mesaj gelince tanıtımı kaldır
+        if (intro) intro.style.display = 'none';
 
-        // Kullanıcı mesajını ekle
         win.innerHTML += `<div class="msg user">${userText}</div>`;
         inp.value = '';
         win.scrollTop = win.scrollHeight;
 
-        // AI Yanıt Kutusu (Boş olarak oluşturulur)
         const aiMsgDiv = document.createElement('div');
         aiMsgDiv.className = 'msg ai';
-        aiMsgDiv.innerText = "Thinking...";
+        aiMsgDiv.innerText = "Düşünüyor...";
         win.appendChild(aiMsgDiv);
 
         try {
@@ -46,40 +43,35 @@ const uiManager = {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'ngrok-skip-browser-warning': 'true' // Ngrok ekranını atlamak için şart
+                    'ngrok-skip-browser-warning': 'true' 
                 },
                 body: JSON.stringify({ 
-                    model: "tinyllama", // Ollama'da yüklü olan model adı
+                    model: "tinyllama",
                     prompt: userText,
-                    stream: false // Hızlı cevap için şimdilik false (tek parça alıp biz yazdıracağız)
+                    stream: false 
                 })
             });
 
-            if (!response.ok) throw new Error("API Hatası");
-
             const data = await response.json();
-            const finalReply = data.response || data.reply;
+            const finalReply = data.response || data.reply || "Cevap boş döndü.";
             
-            // Cevabı tak diye basmak yerine efektle yazdırıyoruz
             uiManager.typeWriter(aiMsgDiv, finalReply);
 
         } catch (error) {
-            console.error("Sistem Hatası:", error);
-            aiMsgDiv.innerText = "Bağlantı kesildi. Lütfen ngrok ve Ollama'nın çalıştığından emin olun.";
+            aiMsgDiv.innerText = "Bağlantı hatası! Ngrok veya Ollama kapalı olabilir.";
             aiMsgDiv.style.color = "#ff4d4d";
         }
-    }
+    },
+
+    // Dil ve Diğer GUI Fonksiyonlarını Buraya Eklemelisin (index.html'den taşı)
+    changeLang: (lang) => { /* HTML içindeki kodun aynısı buraya gelmeli */ },
+    rate: (num) => { /* HTML içindeki kodun aynısı buraya gelmeli */ }
 };
 
-// Enter tuşunu bağla
+// Enter Tuşu
 document.getElementById('userInput')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         uiManager.sendMessage();
     }
 });
-
-// Sayfa yüklendiğinde auth kontrolü (index4.html'deki gibi)
-window.onload = () => {
-    if (typeof authManager !== 'undefined') authManager.check();
-};

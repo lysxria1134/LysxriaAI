@@ -35,9 +35,7 @@ async function sendMessage() {
             method: 'POST',
             body: JSON.stringify({ 
                 model: 'gemma:2b', 
-                prompt:  `Sen Lysxria AI adında, Eymen Yılmaz tarafından geliştirilmiş yardımcı bir yapay zekasın. 
-                Lütfen sadece ve sadece Türkçe cevap ver. 
-                Kullanıcı: ${val}`,
+                prompt:  {val},
                 stream: true 
             })
         });

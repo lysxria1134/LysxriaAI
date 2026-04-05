@@ -29,17 +29,20 @@ const uiManager = {
 
         if (intro) intro.style.display = 'none';
 
+        // Kullanıcı mesajı
         win.innerHTML += `<div class="msg user">${userText}</div>`;
         inp.value = '';
         win.scrollTop = win.scrollHeight;
 
+        // AI Düşünüyor kutusu
         const aiMsgDiv = document.createElement('div');
         aiMsgDiv.className = 'msg ai';
-        aiMsgDiv.innerText = "Düşünüyor...";
+        aiMsgDiv.innerText = "...";
         win.appendChild(aiMsgDiv);
 
         try {
-            const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate";
+            // HATA BURADAYDI: fetch komutu eklenmemişti
+            const response = await fetch(NGROK_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -52,14 +55,16 @@ const uiManager = {
                 })
             });
 
+            if (!response.ok) throw new Error("Sunucu hatası");
+
             const data = await response.json();
-            const finalReply = data.response || data.reply || "Cevap alınamadı.";
+            const finalReply = data.response || data.reply || "Cevap boş döndü.";
             
             uiManager.typeWriter(aiMsgDiv, finalReply);
 
         } catch (error) {
             console.error("Hata:", error);
-            aiMsgDiv.innerText = "Bağlantı hatası! Ngrok veya Ollama kapalı olabilir.";
+            aiMsgDiv.innerText = "Bağlantı hatası! Lütfen Ngrok'un açık olduğundan ve URL'nin doğru olduğundan emin ol.";
             aiMsgDiv.style.color = "#ff4d4d";
         }
     },

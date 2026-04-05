@@ -1,10 +1,10 @@
 // --- LYSXRIA AI PRO - OPTİMİZE SCRIPT ---
 
-// Eğer bir Python/Flask backend kullanacaksan ngrok linkini buraya yaz
-const NGROK_URL = "https://SENIN-NGROK-LINKIN.ngrok-free.app/chat"; 
+// Kullanıcının verdiği güncel ngrok URL'si
+const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/chat"; 
 
 const uiManager = {
-    // Mesaj Gönderme Fonksiyonu
+    // Mesaj Gönderme Fonksiyonu (Hız ve Hata Kontrolü Optimize Edildi)
     sendMessage: async () => {
         const inp = document.getElementById('userInput');
         const win = document.getElementById('chat-window');
@@ -14,7 +14,9 @@ const uiManager = {
 
         // Tanıtım yazısını ilk mesajda gizle
         const intro = document.getElementById('intro-text');
-        if (intro) intro.style.display = 'none';
+        if (intro && intro.style.display !== 'none') {
+            intro.style.display = 'none';
+        }
 
         // Kullanıcı mesajını ekrana bas
         win.innerHTML += `<div class="msg user">${userText}</div>`;
@@ -28,26 +30,28 @@ const uiManager = {
         win.appendChild(aiMsgDiv);
 
         try {
-            // TinyLlama / Hızlı Yanıt İçin Fetch İsteyi
-            // Not: Tam optimizasyon için yerel WebLLM veya bu API ucunu kullanabilirsin
+            // Hızlı yanıt için fetch zaman aşımı ve hata kontrolü
             const response = await fetch(NGROK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true' // Ngrok uyarı sayfasını atlamak için kritik
+                },
                 body: JSON.stringify({ 
                     message: userText,
-                    model: "tinyllama",
-                    stream: false 
+                    model: "tinyllama"
                 })
             });
 
+            if (!response.ok) throw new Error("Ağ hatası");
+
             const data = await response.json();
-            aiMsgDiv.innerText = data.reply || "Bağlantı hatası oluştu.";
+            aiMsgDiv.innerText = data.reply || data.response || "Yanıt alınamadı.";
             
         } catch (error) {
-            // Eğer backend yoksa simüle edilmiş hızlı yanıt (Test için)
-            setTimeout(() => {
-                aiMsgDiv.innerText = "Şu an ngrok bağlantısı kurulmadığı için demo modundayım. Lütfen script.js içindeki NGROK_URL kısmını güncelleyin.";
-            }, 1000);
+            console.error("Hata:", error);
+            aiMsgDiv.innerText = "Bağlantı hatası: Lütfen ngrok sunucusunun aktif olduğundan emin olun.";
+            aiMsgDiv.style.color = "#ff4d4d";
         }
 
         win.scrollTop = win.scrollHeight;
@@ -60,19 +64,23 @@ const uiManager = {
             el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
         });
         
-        // Form elemanlarını güncelle
-        document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
-        document.getElementById('reg-name').placeholder = isTr ? 'İsim' : 'Name';
-        document.getElementById('reg-mail').placeholder = isTr ? 'Gmail' : 'Email';
-        
-        const authBtn = document.getElementById('auth-btn');
-        if (authBtn) authBtn.innerText = isTr ? 'Sisteme Gir' : 'Enter System';
+        // Form ve içerik çevirileri
+        const elements = {
+            'userInput': isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...',
+            'reg-name': isTr ? 'İsim' : 'Name',
+            'reg-mail': isTr ? 'Gmail' : 'Email',
+            'auth-btn': isTr ? 'Sisteme Gir' : 'Enter System',
+            'intro-content': isTr ? 
+                "Lysxria AI, modern tasarımı ve güçlü altyapısıyla size en iyi deneyimi sunmak için burada. Her türlü sorunuzu sorabilir, projelerinizde yardım alabilir veya sadece sohbet edebilirsiniz. Lysxria dünyasına hoş geldiniz!" : 
+                "Lysxria AI is here to provide you with the best experience with its modern design and powerful infrastructure. You can ask any question, get help with your projects, or just chat. Welcome to the world of Lysxria!"
+        };
 
-        const introContent = document.getElementById('intro-content');
-        if (introContent) {
-            introContent.innerText = isTr ? 
-                "Lysxria AI, modern tasarımı ve güçlü altyapısıyla size en iyi deneyimi sunmak için burada. Her türlü sorunuzu sorabilir, projelerinizde yardım alabilir veya sadece sohbet edebilirsiniz." : 
-                "Lysxria AI is here to provide you with the best experience with its modern design and powerful infrastructure. You can ask any question or just chat.";
+        for (let id in elements) {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') el.placeholder = elements[id];
+                else el.innerText = elements[id];
+            }
         }
         
         closeGUI('lang-gui');
@@ -98,17 +106,19 @@ const uiManager = {
 
     // Paylaşım Fonksiyonu
     share: (platform) => {
+        const text = encodeURIComponent("Lysxria AI PRO ile tanışın!");
         if(platform === 'whatsapp') {
-            window.open('https://wa.me/?text=Lysxria%20AI%20ile%20tanışın!');
+            window.open(`https://wa.me/?text=${text}`);
         } else {
-            alert('Bağlantı kopyalandı!');
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link kopyalandı!');
         }
         closeGUI('share-gui');
     }
 };
 
-// Enter tuşu ile mesaj gönderme optimizasyonu
-document.getElementById('userInput')?.addEventListener('keypress', function (e) {
+// Enter tuşu dinleyicisi (Hızlı gönderim için)
+document.getElementById('userInput')?.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         uiManager.sendMessage();

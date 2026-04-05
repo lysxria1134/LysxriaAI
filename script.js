@@ -35,7 +35,7 @@ async function sendMessage() {
             method: 'POST',
             body: JSON.stringify({ 
                 model: 'tinyllama', 
-                prompt: val, 
+                prompt:  `Sen yardımcı bir yapay zekasın. Lütfen sadece Türkçe cevap ver. Soru: ${val}`,
                 stream: true 
             })
         });

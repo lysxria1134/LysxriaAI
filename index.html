@@ -229,37 +229,7 @@
                 location.reload();
             }
         };
-
-        const uiManager = {
-            sendMessage: () => {
-                const inp = document.getElementById('userInput');
-                const win = document.getElementById('chat-window');
-                if(!inp.value.trim()) return;
-                
-                // Mesaj atınca tanıtım yazısını gizle
-                document.getElementById('intro-text').style.display = 'none';
-
-                win.innerHTML += `<div class="msg user">${inp.value}</div>`;
-                inp.value = '';
-                win.scrollTop = 99999;
-            },
-            setMode: (name, labelText) => {
-                const label = document.getElementById('mode-label');
-                label.innerText = labelText || name.toUpperCase();
-                label.style.display = 'block';
-                closeGUI('model-gui');
-            },
-            share: (platform) => {
-                if(platform === 'whatsapp') window.open('https://wa.me/');
-                else alert('Bağlantı kopyalandı! Instagramda paylaşabilirsin.');
-                closeGUI('share-gui');
-            },
-            changeLang: (lang) => {
-                const isTr = lang === 'tr';
-                document.querySelectorAll('[data-tr]').forEach(el => {
-                    el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
-                });
-                
+ 
                 // Input ve Kayıt ekranı çevirileri
                 document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
                 document.getElementById('reg-name').placeholder = isTr ? 'İsim' : 'Name';

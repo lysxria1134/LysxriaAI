@@ -35,14 +35,15 @@
             font-size: 15px; line-height: 1.6; z-index: 5; pointer-events: none;
         }
 
-        /* --- KAYIT SİSTEMİ (AUTH) --- */
+        /* --- KAYIT & PROFİL SİSTEMİ --- */
         #auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); display: flex; align-items: center; justify-content: center; z-index: 20000;
+            background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 20000;
+            backdrop-filter: blur(10px);
         }
         .auth-card {
             background: var(--panel-bg); padding: 40px; border-radius: 25px; width: 90%; max-width: 380px;
-            text-align: center; border: 1px solid var(--accent-red); backdrop-filter: var(--glass);
+            text-align: center; border: 1px solid var(--accent-red);
         }
         .auth-card input {
             width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px;
@@ -101,55 +102,48 @@
         .circle-btn { min-width: 40px; height: 40px; border-radius: 50%; border: none; background: #fff; color: #000; cursor: pointer; font-size: 18px; }
 
         #mode-label { position: absolute; top: -20px; left: 30px; background: var(--accent-red); color: white; font-size: 10px; font-weight: bold; padding: 2px 10px; border-radius: 10px; display: none; }
-
-        .star { cursor: pointer; color: #333; transition: 0.2s; }
-        .star.active { color: #ffd700; text-shadow: 0 0 8px #ffd700; }
     </style>
 </head>
 <body>
 
-    <div id="auth-overlay">
-        <div class="auth-card">
-            <h1 id="auth-title" style="color: var(--accent-red); margin-bottom: 25px;">LYSXRIA AI</h1>
+    <div id="auth-overlay" onclick="if(event.target == this) this.style.display='none'">
+        <div class="auth-card" onclick="event.stopPropagation()">
+            <h1 style="color: var(--accent-red); margin-bottom: 25px;">LYSXRIA HESABI</h1>
+            <p style="font-size: 12px; color: #888;">Lütfen bilgilerinizi kaydedin</p>
             <input type="text" id="reg-name" placeholder="İsim">
             <input type="email" id="reg-mail" placeholder="Gmail">
-            <button id="auth-btn" onclick="authManager.register()">Sisteme Gir</button>
+            <button onclick="authManager.register()">Kaydet ve Giriş Yap</button>
+            <button onclick="document.getElementById('auth-overlay').style.display='none'" style="background:none; border:1px solid #333; margin-top:5px;">Vazgeç</button>
         </div>
     </div>
 
     <div id="intro-text">
-        <span id="intro-content">Lysxria AI dünyasına hoş geldiniz!</span>
+        <span id="intro-content">Lysxria AI PRO'ya hoş geldiniz. Mesajlaşmaya başlayabilirsiniz.</span>
     </div>
 
     <div id="profile-gui" class="custom-gui">
-        <div class="gui-header">KULLANICI PROFİLİ</div>
+        <div class="gui-header">PROFİL BİLGİLERİ</div>
         <div style="text-align:center; margin-bottom: 20px;">
+            <div style="width:60px; height:60px; background:var(--accent-red); border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:25px; font-weight:bold;">L</div>
             <p id="p-display-name" style="font-size: 20px; font-weight: bold; margin: 0;"></p>
             <p id="p-display-mail" style="color: gray; font-size: 13px;"></p>
         </div>
-        <button class="gui-btn" onclick="authManager.logout()" style="color: #ff4d4d;"><i class="fa fa-sign-out"></i> Çıkış Yap</button>
+        <button class="gui-btn" onclick="authManager.logout()" style="color: #ff4d4d;"><i class="fa fa-sign-out"></i> Hesabı Sil / Çıkış</button>
         <button class="gui-btn" onclick="closeGUI('profile-gui')">Kapat</button>
     </div>
 
     <div id="model-gui" class="custom-gui">
         <div class="gui-header">ZEKA MODU SEÇİN</div>
-        <button class="gui-btn" onclick="uiManager.setMode('Hızlı', 'FAST')"><i class="fa fa-bolt"></i> Hızlı Yanıt</button>
-        <button class="gui-btn" onclick="uiManager.setMode('Pro', 'PRO')"><i class="fa fa-crown"></i> Pro Yanıt</button>
-        <button class="gui-btn" onclick="closeGUI('model-gui')">Vazgeç</button>
-    </div>
-
-    <div id="share-gui" class="custom-gui">
-        <div class="gui-header">SOHBETİ PAYLAŞ</div>
-        <button class="gui-btn" onclick="uiManager.share('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-        <button class="gui-btn" onclick="closeGUI('share-gui')">Kapat</button>
+        <button class="gui-btn" onclick="uiManager.setMode('Hızlı', 'FAST')"><i class="fa fa-bolt"></i> Hızlı</button>
+        <button class="gui-btn" onclick="uiManager.setMode('Pro', 'PRO')"><i class="fa fa-crown"></i> Pro</button>
+        <button class="gui-btn" onclick="closeGUI('model-gui')">Kapat</button>
     </div>
 
     <div id="sidebar">
         <div class="side-btn" onclick="location.reload()" style="border: 1px solid var(--accent-red); justify-content:center; margin-bottom:15px;"><i class="fa fa-plus"></i> Yeni Sohbet</div>
-        <div class="side-title">Özellikler</div>
+        <div class="side-title">Ayarlar</div>
+        <div class="side-btn" onclick="authManager.handleProfileClick()"><i class="fa fa-user"></i> Hesabım / Profil</div>
         <div class="side-btn" onclick="openGUI('model-gui')"><i class="fa fa-crown"></i> Zeka Modları</div>
-        <div class="side-btn" onclick="openGUI('share-gui')"><i class="fa fa-share-nodes"></i> Sohbeti Paylaş</div>
-        <div class="side-btn" onclick="authManager.logout()"><i class="fa fa-sign-out"></i> Çıkış Yap</div>
     </div>
 
     <div id="main">
@@ -157,49 +151,56 @@
             <i class="fa fa-bars" style="cursor:pointer; color:var(--accent-red); font-size:22px" onclick="document.getElementById('sidebar').classList.add('open')"></i>
             <span style="font-weight: bold; color: var(--accent-red); letter-spacing:1.5px">LYSXRIA AI PRO</span>
             <div style="display: flex; align-items: center; gap: 18px;">
-                <div class="net-bars" id="net-display">
+                <div class="net-bars">
                     <div class="bar bar1"></div> <div class="bar bar2"></div> <div class="bar bar3"></div> <div class="bar bar4"></div>
                 </div>
-                <i class="fa fa-circle-user" style="font-size: 22px; cursor:pointer" onclick="openGUI('profile-gui')"></i>
+                <i class="fa fa-circle-user" style="font-size: 22px; cursor:pointer" onclick="authManager.handleProfileClick()"></i>
             </div>
         </div>
 
         <div id="chat-window"></div>
 
         <div class="input-wrapper">
-            <div id="mode-label">HIZLI</div>
             <textarea id="userInput" rows="1" placeholder="Mesajınızı buraya bırakın..."></textarea>
             <button class="circle-btn" onclick="uiManager.sendMessage()"><i class="fa fa-arrow-up"></i></button>
         </div>
     </div>
 
     <script>
-        // --- KAYIT VE OTURUM SİSTEMİ ---
+        // --- YENİ KAYIT VE PROFİL MANTIĞI ---
         const authManager = {
+            // Profil tuşuna basıldığında ne olacağını belirler
+            handleProfileClick: () => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if(user) {
+                    // Eğer kayıtlıysa direkt profil panelini aç
+                    document.getElementById('p-display-name').innerText = user.name;
+                    document.getElementById('p-display-mail').innerText = user.mail;
+                    openGUI('profile-gui');
+                } else {
+                    // Kayıtlı değilse kayıt ekranını göster
+                    document.getElementById('auth-overlay').style.display = 'flex';
+                }
+            },
+
             register: () => {
                 const name = document.getElementById('reg-name').value;
                 const mail = document.getElementById('reg-mail').value;
                 
                 if(name.trim() && mail.trim()) {
                     localStorage.setItem('user', JSON.stringify({name, mail}));
-                    authManager.check();
+                    document.getElementById('auth-overlay').style.display = 'none';
+                    alert("Başarıyla kaydedildi! Artık profilinize bakabilirsiniz.");
                 } else {
                     alert("Lütfen tüm alanları doldurun!");
                 }
             },
-            check: () => {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if(user) {
-                    document.getElementById('auth-overlay').style.display = 'none';
-                    document.getElementById('p-display-name').innerText = user.name;
-                    document.getElementById('p-display-mail').innerText = user.mail;
-                } else {
-                    document.getElementById('auth-overlay').style.display = 'flex';
-                }
-            },
+
             logout: () => {
-                localStorage.removeItem('user');
-                location.reload();
+                if(confirm("Bilgileriniz silinecek, emin misiniz?")) {
+                    localStorage.removeItem('user');
+                    location.reload();
+                }
             }
         };
 
@@ -220,7 +221,7 @@
             }
         }
 
-        // --- İNTERNET SİNYALİ ---
+        // İnternet Sinyali Efekti
         setInterval(() => {
             const bars = document.querySelectorAll('.bar');
             const strength = Math.floor(Math.random() * 4) + 1;
@@ -230,14 +231,12 @@
             });
         }, 3000);
 
-        // Sidebar dışı tıklama
+        // Sidebar kapatma
         window.onclick = (e) => {
             if(e.target.id === 'chat-window' || e.target.id === 'main') {
                 document.getElementById('sidebar').classList.remove('open');
             }
         };
-
-        window.onload = authManager.check;
     </script>
     <script src="script.js"></script>
 </body>

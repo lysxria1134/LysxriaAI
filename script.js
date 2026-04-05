@@ -28,7 +28,7 @@ async function sendMessage() {
         addBubble('ai', data.response);
         saveChat(val, data.response);
     } catch (e) {
-        addBubble('ai', "Hata: Bilgisayarında Ollama açık mı? (Localhost bağlantısı kurulamadı)");
+        addBubble('ai', "Hata: Eymenin Kurduğu Yapay zeka Şuan mola'da , DİNLENİYOR , Lütfen daha sonra deneyin , Sağlıklı GÜNLER!");
     }
 }
 

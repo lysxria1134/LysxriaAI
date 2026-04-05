@@ -28,7 +28,7 @@
 
         @keyframes gradientWave { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* --- TANITIM YAZISI (GRİ) --- */
+        /* --- TANITIM YAZISI --- */
         #intro-text {
             position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
             width: 80%; max-width: 500px; text-align: center; color: #888;
@@ -53,7 +53,7 @@
             border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 15px;
         }
 
-        /* --- ŞIK VE TRANSPARAN GUI PANELLERİ (SLOW FADE) --- */
+        /* --- GUI PANELLERİ --- */
         .custom-gui {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.7);
             width: 85%; max-width: 360px; background: var(--panel-bg);
@@ -118,68 +118,38 @@
     </div>
 
     <div id="intro-text">
-        <span id="intro-content">Lysxria AI, modern tasarımı ve güçlü altyapısıyla size en iyi deneyimi sunmak için burada. Her türlü sorunuzu sorabilir, projelerinizde yardım alabilir veya sadece sohbet edebilirsiniz. Lysxria dünyasına hoş geldiniz! HE BU ARADA SİTENİN SAHİBİ ECRİNE DELİ GİBİ AŞIK BENDEN DUYMADINIZ 🤐😋</span>
+        <span id="intro-content">Lysxria AI dünyasına hoş geldiniz!</span>
     </div>
 
     <div id="profile-gui" class="custom-gui">
-        <div class="gui-header" data-tr="KULLANICI PROFİLİ" data-en="USER PROFILE">KULLANICI PROFİLİ</div>
+        <div class="gui-header">KULLANICI PROFİLİ</div>
         <div style="text-align:center; margin-bottom: 20px;">
             <p id="p-display-name" style="font-size: 20px; font-weight: bold; margin: 0;"></p>
             <p id="p-display-mail" style="color: gray; font-size: 13px;"></p>
         </div>
-        <button class="gui-btn" onclick="authManager.logout()" style="color: #ff4d4d;"><i class="fa fa-sign-out"></i> <span data-tr="Çıkış Yap" data-en="Logout">Çıkış Yap</span></button>
-        <button class="gui-btn" onclick="closeGUI('profile-gui')" data-tr="Kapat" data-en="Close">Kapat</button>
+        <button class="gui-btn" onclick="authManager.logout()" style="color: #ff4d4d;"><i class="fa fa-sign-out"></i> Çıkış Yap</button>
+        <button class="gui-btn" onclick="closeGUI('profile-gui')">Kapat</button>
     </div>
 
     <div id="model-gui" class="custom-gui">
-        <div class="gui-header" data-tr="ZEKA MODU SEÇİN" data-en="SELECT AI MODE">ZEKA MODU SEÇİN</div>
-        <button class="gui-btn" onclick="uiManager.setMode('Hızlı', 'FAST')"><i class="fa fa-bolt"></i> <span data-tr="Hızlı Yanıt (Standart)" data-en="Fast Response (Standard)">Hızlı Yanıt (Standart)</span></button>
-        <button class="gui-btn" onclick="uiManager.setMode('Pro', 'PRO')"><i class="fa fa-crown"></i> <span data-tr="Pro Yanıt (Gelişmiş)" data-en="Pro Response (Advanced)">Pro Yanıt (Gelişmiş)</span></button>
-        <button class="gui-btn" onclick="uiManager.setMode('Düşünen', 'THINKING')"><i class="fa fa-brain"></i> <span data-tr="Düşünen Yanıt (Analiz)" data-en="Thinking Response (Analysis)">Düşünen Yanıt (Analiz)</span></button>
-        <button class="gui-btn" onclick="closeGUI('model-gui')" data-tr="Vazgeç" data-en="Cancel">Vazgeç</button>
+        <div class="gui-header">ZEKA MODU SEÇİN</div>
+        <button class="gui-btn" onclick="uiManager.setMode('Hızlı', 'FAST')"><i class="fa fa-bolt"></i> Hızlı Yanıt</button>
+        <button class="gui-btn" onclick="uiManager.setMode('Pro', 'PRO')"><i class="fa fa-crown"></i> Pro Yanıt</button>
+        <button class="gui-btn" onclick="closeGUI('model-gui')">Vazgeç</button>
     </div>
 
     <div id="share-gui" class="custom-gui">
-        <div class="gui-header" data-tr="SOHBETİ PAYLAŞ" data-en="SHARE CHAT">SOHBETİ PAYLAŞ</div>
+        <div class="gui-header">SOHBETİ PAYLAŞ</div>
         <button class="gui-btn" onclick="uiManager.share('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-        <button class="gui-btn" onclick="uiManager.share('insta')"><i class="fab fa-instagram"></i> Instagram</button>
-        <button class="gui-btn" onclick="closeGUI('share-gui')" data-tr="Kapat" data-en="Close">Kapat</button>
-    </div>
-
-    <div id="lang-gui" class="custom-gui">
-        <div class="gui-header" data-tr="DİL AYARLARI" data-en="LANGUAGE SETTINGS">DİL AYARLARI</div>
-        <button class="gui-btn" onclick="uiManager.changeLang('tr')">Türkçe (TR)</button>
-        <button class="gui-btn" onclick="uiManager.changeLang('en')">English (US)</button>
-    </div>
-
-    <div id="rate-gui" class="custom-gui">
-        <div class="gui-header" data-tr="PUAN VER" data-en="RATE US">PUAN VER</div>
-        <div style="text-align:center; font-size: 30px; margin-bottom: 20px;">
-            <i class="fa fa-star star" onclick="uiManager.rate(1)"></i>
-            <i class="fa fa-star star" onclick="uiManager.rate(2)"></i>
-            <i class="fa fa-star star" onclick="uiManager.rate(3)"></i>
-            <i class="fa fa-star star" onclick="uiManager.rate(4)"></i>
-            <i class="fa fa-star star" onclick="uiManager.rate(5)"></i>
-        </div>
-        <button class="gui-btn" onclick="alert('Teşekkürler!'); closeGUI('rate-gui')" data-tr="Gönder" data-en="Submit">Gönder</button>
+        <button class="gui-btn" onclick="closeGUI('share-gui')">Kapat</button>
     </div>
 
     <div id="sidebar">
-        <div class="side-btn" onclick="location.reload()" style="border: 1px solid var(--accent-red); justify-content:center; margin-bottom:15px;"><i class="fa fa-plus"></i> <span data-tr="Yeni Sohbet" data-en="New Chat">Yeni Sohbet</span></div>
-        
-        <div class="side-title" data-tr="Gelişmiş Özellikler" data-en="Advanced Features">Gelişmiş Özellikler</div>
-        <div class="side-btn" onclick="openGUI('model-gui')"><i class="fa fa-crown"></i> <span data-tr="Zeka Modları" data-en="AI Modes">Zeka Modları</span></div>
-        <div class="side-btn" onclick="openGUI('share-gui')"><i class="fa fa-share-nodes"></i> <span data-tr="Sohbeti Paylaş" data-en="Share Chat">Sohbeti Paylaş</span></div>
-        <div class="side-btn" onclick="alert('Hızlandırma Aktif!')"><i class="fa fa-microchip"></i> <span data-tr="Donanım Hızlandırma" data-en="Hardware Acceleration">Donanım Hızlandırma</span></div>
-
-        <div class="side-title" data-tr="Ayarlar & Puanlama" data-en="Settings & Rating">Ayarlar & Puanlama</div>
-        <div class="side-btn" onclick="openGUI('lang-gui')"><i class="fa fa-language"></i> <span data-tr="Dil Değiştir (TR/EN)" data-en="Change Language (TR/EN)">Dil Değiştir (TR/EN)</span></div>
-        <div class="side-btn" onclick="openGUI('rate-gui')"><i class="fa fa-star"></i> <span data-tr="Bizi Değerlendir" data-en="Rate Us">Bizi Değerlendir</span></div>
-        <div class="side-btn" onclick="location.reload()"><i class="fa fa-sync"></i> <span data-tr="Sayfayı Yenile" data-en="Refresh Page">Sayfayı Yenile</span></div>
-
-        <div class="side-title">Lysxria Network</div>
-        <a href="https://instagram.com/lysxria.sw" target="_blank" class="side-btn" style="text-decoration:none;"><i class="fab fa-instagram"></i> <span data-tr="Instagram Sayfası" data-en="Instagram Page">Instagram Sayfası</span></a>
-        <a href="https://discord.gg/WnYfCasd" target="_blank" class="side-btn" style="text-decoration:none;"><i class="fab fa-discord"></i> <span data-tr="Discord Sunucusu" data-en="Discord Server">Discord Sunucusu</span></a>
+        <div class="side-btn" onclick="location.reload()" style="border: 1px solid var(--accent-red); justify-content:center; margin-bottom:15px;"><i class="fa fa-plus"></i> Yeni Sohbet</div>
+        <div class="side-title">Özellikler</div>
+        <div class="side-btn" onclick="openGUI('model-gui')"><i class="fa fa-crown"></i> Zeka Modları</div>
+        <div class="side-btn" onclick="openGUI('share-gui')"><i class="fa fa-share-nodes"></i> Sohbeti Paylaş</div>
+        <div class="side-btn" onclick="authManager.logout()"><i class="fa fa-sign-out"></i> Çıkış Yap</div>
     </div>
 
     <div id="main">
@@ -198,61 +168,69 @@
 
         <div class="input-wrapper">
             <div id="mode-label">HIZLI</div>
-            <i class="fa fa-paperclip" style="cursor:pointer; color:#777; font-size:20px" onclick="openGUI('model-gui')" title="Mod Değiştir"></i>
-            <i class="fa fa-share-nodes" style="cursor:pointer; color:#777; font-size:20px" onclick="openGUI('share-gui')" title="Paylaş"></i>
             <textarea id="userInput" rows="1" placeholder="Mesajınızı buraya bırakın..."></textarea>
             <button class="circle-btn" onclick="uiManager.sendMessage()"><i class="fa fa-arrow-up"></i></button>
         </div>
     </div>
 
     <script>
-        
-                // Input ve Kayıt ekranı çevirileri
-                document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
-                document.getElementById('reg-name').placeholder = isTr ? 'İsim' : 'Name';
-                document.getElementById('reg-mail').placeholder = isTr ? 'Gmail' : 'Email';
-                document.getElementById('auth-btn').innerText = isTr ? 'Sisteme Gir' : 'Enter System';
-                document.getElementById('intro-content').innerText = isTr ? 
-                    "Lysxria AI, modern tasarımı ve güçlü altyapısıyla size en iyi deneyimi sunmak için burada. Her türlü sorunuzu sorabilir, projelerinizde yardım alabilir veya sadece sohbet edebilirsiniz. Lysxria dünyasına hoş geldiniz!" : 
-                    "Lysxria AI is here to provide you with the best experience with its modern design and powerful infrastructure. You can ask any question, get help with your projects, or just chat. Welcome to the world of Lysxria!";
+        // --- KAYIT VE OTURUM SİSTEMİ ---
+        const authManager = {
+            register: () => {
+                const name = document.getElementById('reg-name').value;
+                const mail = document.getElementById('reg-mail').value;
                 
-                closeGUI('lang-gui');
+                if(name.trim() && mail.trim()) {
+                    localStorage.setItem('user', JSON.stringify({name, mail}));
+                    authManager.check();
+                } else {
+                    alert("Lütfen tüm alanları doldurun!");
+                }
             },
-            rate: (num) => {
-                const stars = document.querySelectorAll('.star');
-                stars.forEach((s, i) => {
-                    if(i < num) s.classList.add('active');
-                    else s.classList.remove('active');
-                });
+            check: () => {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if(user) {
+                    document.getElementById('auth-overlay').style.display = 'none';
+                    document.getElementById('p-display-name').innerText = user.name;
+                    document.getElementById('p-display-mail').innerText = user.mail;
+                } else {
+                    document.getElementById('auth-overlay').style.display = 'flex';
+                }
+            },
+            logout: () => {
+                localStorage.removeItem('user');
+                location.reload();
             }
         };
 
+        // --- GUI FONKSİYONLARI ---
         function openGUI(id) {
             const el = document.getElementById(id);
-            el.style.display = 'block';
-            setTimeout(() => el.classList.add('open'), 10);
-            document.getElementById('sidebar').classList.remove('open');
+            if(el) {
+                el.style.display = 'block';
+                setTimeout(() => el.classList.add('open'), 10);
+                document.getElementById('sidebar').classList.remove('open');
+            }
         }
         function closeGUI(id) {
             const el = document.getElementById(id);
-            el.classList.remove('open');
-            setTimeout(() => el.style.display = 'none', 600);
+            if(el) {
+                el.classList.remove('open');
+                setTimeout(() => el.style.display = 'none', 600);
+            }
         }
 
-        // İNTERNET SİNYALİ (RENK KONTROLLÜ)
+        // --- İNTERNET SİNYALİ ---
         setInterval(() => {
             const bars = document.querySelectorAll('.bar');
             const strength = Math.floor(Math.random() * 4) + 1;
             bars.forEach((b, i) => {
                 b.className = 'bar bar' + (i + 1);
-                if(i < strength) {
-                    if(strength === 1) b.classList.add('red');
-                    else b.classList.add('green');
-                }
+                if(i < strength) strength === 1 ? b.classList.add('red') : b.classList.add('green');
             });
         }, 3000);
 
-        // Sidebar dışına tıklandığında kapat
+        // Sidebar dışı tıklama
         window.onclick = (e) => {
             if(e.target.id === 'chat-window' || e.target.id === 'main') {
                 document.getElementById('sidebar').classList.remove('open');
@@ -260,6 +238,7 @@
         };
 
         window.onload = authManager.check;
-    </script> <script src="script.js"></script>
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>

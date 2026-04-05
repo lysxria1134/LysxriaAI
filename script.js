@@ -12,7 +12,8 @@ const uiManager = {
                 element.innerText += text.charAt(i);
                 i++;
                 setTimeout(type, speed);
-                document.getElementById('chat-window').scrollTop = 99999;
+                const win = document.getElementById('chat-window');
+                if(win) win.scrollTop = win.scrollHeight;
             }
         }
         type();
@@ -21,12 +22,11 @@ const uiManager = {
     sendMessage: async () => {
         const inp = document.getElementById('userInput');
         const win = document.getElementById('chat-window');
-        const intro = document.getElementById('intro-text'); // ID Düzeltildi
+        const intro = document.getElementById('intro-text');
         const userText = inp.value.trim();
 
         if (!userText) return;
 
-        // Mesaj gelince tanıtımı kaldır
         if (intro) intro.style.display = 'none';
 
         win.innerHTML += `<div class="msg user">${userText}</div>`;
@@ -39,7 +39,7 @@ const uiManager = {
         win.appendChild(aiMsgDiv);
 
         try {
-            const response = await fetch(lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate";/api/generate, {
+            const response = await fetch(NGROK_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -53,25 +53,53 @@ const uiManager = {
             });
 
             const data = await response.json();
-            const finalReply = data.response || data.reply || "Cevap boş döndü.";
+            const finalReply = data.response || data.reply || "Cevap alınamadı.";
             
             uiManager.typeWriter(aiMsgDiv, finalReply);
 
         } catch (error) {
+            console.error("Hata:", error);
             aiMsgDiv.innerText = "Bağlantı hatası! Ngrok veya Ollama kapalı olabilir.";
             aiMsgDiv.style.color = "#ff4d4d";
         }
     },
 
-    // Dil ve Diğer GUI Fonksiyonlarını Buraya Eklemelisin (index.html'den taşı)
-    changeLang: (lang) => { /* HTML içindeki kodun aynısı buraya gelmeli */ },
-    rate: (num) => { /* HTML içindeki kodun aynısı buraya gelmeli */ }
+    setMode: (name, labelText) => {
+        const label = document.getElementById('mode-label');
+        if(label) {
+            label.innerText = labelText || name.toUpperCase();
+            label.style.display = 'block';
+        }
+        closeGUI('model-gui');
+    },
+
+    changeLang: (lang) => {
+        const isTr = lang === 'tr';
+        document.querySelectorAll('[data-tr]').forEach(el => {
+            el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
+        });
+        document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
+        closeGUI('lang-gui');
+    },
+
+    rate: (num) => {
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((s, i) => s.classList.toggle('active', i < num));
+    },
+
+    share: (platform) => {
+        if(platform === 'whatsapp') window.open('https://wa.me/');
+        else alert('Link kopyalandı!');
+        closeGUI('share-gui');
+    }
 };
 
-// Enter Tuşu
-document.getElementById('userInput')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        uiManager.sendMessage();
-    }
+// Enter Tuşu Dinleyicisi
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('userInput')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            uiManager.sendMessage();
+        }
+    });
 });

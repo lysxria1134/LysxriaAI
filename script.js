@@ -39,7 +39,7 @@ const uiManager = {
         win.appendChild(aiMsgDiv);
 
         try {
-            const response = await fetch(NGROK_URL, {
+            const response = await fetch(lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate";/api/generate, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

@@ -34,8 +34,10 @@ async function sendMessage() {
         const response = await fetch('https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate', {
             method: 'POST',
             body: JSON.stringify({ 
-                model: 'tinyllama', 
-                prompt:  `Sen yardımcı bir yapay zekasın. Lütfen sadece Türkçe cevap ver. Soru: ${val}`,
+                model: 'gemma:2b', 
+                prompt:  `Sen Lysxria AI adında, Eymen Yılmaz tarafından geliştirilmiş yardımcı bir yapay zekasın. 
+                Lütfen sadece ve sadece Türkçe cevap ver. 
+                Kullanıcı: ${val}`,
                 stream: true 
             })
         });

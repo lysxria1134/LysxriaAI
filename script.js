@@ -21,60 +21,54 @@ const uiManager = {
         type();
     },
 
-    sendMessage: async () => {
-        const inp = document.getElementById('userInput');
-        const win = document.getElementById('chat-window');
-        const intro = document.getElementById('intro-text');
-        const userText = inp.value.trim();
+   sendMessage: async () => {
+    const inp = document.getElementById('userInput');
+    const win = document.getElementById('chat-window');
+    const userText = inp.value.trim();
 
-        if (!userText) return;
+    if (!userText) return;
 
-        // Mesaj gelince tanıtım yazısını kaldır
-        if (intro) intro.style.display = 'none';
+    // Arayüz güncellemeleri
+    if (document.getElementById('intro-text')) document.getElementById('intro-text').style.display = 'none';
+    win.innerHTML += `<div class="msg user">${userText}</div>`;
+    inp.value = '';
+    
+    const aiMsgDiv = document.createElement('div');
+    aiMsgDiv.className = 'msg ai';
+    aiMsgDiv.innerText = "...";
+    win.appendChild(aiMsgDiv);
+    win.scrollTop = win.scrollHeight;
 
-        // Kullanıcı mesajını ekrana bas
-        win.innerHTML += `<div class="msg user">${userText}</div>`;
-        inp.value = '';
-        win.scrollTop = win.scrollHeight;
+    try {
+        const response = await fetch(NGROK_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true' 
+            },
+            body: JSON.stringify({ 
+                model: "tinyllama",
+                prompt: userText,
+                stream: false // BURASI ÇOK ÖNEMLİ: Tek parça yanıt almak için
+            })
+        });
 
-        // AI Yanıt kutusunu oluştur
-        const aiMsgDiv = document.createElement('div');
-        aiMsgDiv.className = 'msg ai';
-        aiMsgDiv.innerText = "...";
-        win.appendChild(aiMsgDiv);
+        if (!response.ok) throw new Error("Ağ yanıtı düzgün değil.");
 
-        try {
-            const response = await fetch(NGROK_URL, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'ngrok-skip-browser-warning': 'true' // Ngrok uyarı sayfasını atlamak için şart
-                },
-                body: JSON.stringify({ 
-                    model: "tinyllama", // Bilgisayarında yüklü model ismiyle aynı olmalı
-                    prompt: userText,
-                    stream: false 
-                })
-            });
+        const data = await response.json();
+        console.log("Ollama'dan gelen ham veri:", data); // F12 konsolunda kontrol et
 
-            if (!response.ok) {
-                throw new Error(`Sunucu hatası: ${response.status}`);
-            }
+        // Ollama yanıtı 'response' key'i içinde gönderir
+        const finalReply = data.response || "Yanıt içeriği boş.";
+        
+        uiManager.typeWriter(aiMsgDiv, finalReply);
 
-            const data = await response.json();
-            // Ollama'dan gelen ana metin 'response' içindedir
-            const finalReply = data.response || "Yanıt alınamadı.";
-            
-            uiManager.typeWriter(aiMsgDiv, finalReply);
-
-        } catch (error) {
-            console.error("Detaylı Hata:", error);
-            aiMsgDiv.innerText = "Bağlantı kurulamadı. Ngrok linki değişmiş olabilir veya Ollama kapalı.";
-            aiMsgDiv.style.color = "#ff4d4d";
-        }
-    },
-
+    } catch (error) {
+        console.error("Hata ayrıntısı:", error);
+        aiMsgDiv.innerText = "Hata: " + error.message;
+        aiMsgDiv.style.color = "#ff4d4d";
+    }
+}
     setMode: (name, labelText) => {
         const label = document.getElementById('mode-label');
         if(label) {

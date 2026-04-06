@@ -2,7 +2,7 @@
 
 // BURAYI GÜNCELLE: Ngrok terminalindeki "Forwarding" yazan https://... ile başlayan linki buraya yapıştır.
 // Not: Linkin sonuna mutlaka /api/generate eklemeyi unutma!
-const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate"; 
+const NGROK_URL = "http://localhost:11434 /api/generate"; 
 
 const uiManager = {
     // Yazma Efekti

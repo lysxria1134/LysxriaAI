@@ -57,7 +57,7 @@ async function sendMessage() {
     try {
         const res = await fetch('https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate', {
             method: 'POST',
-            body: JSON.stringify({ model: 'llama3', prompt: text, stream: false })
+            body: JSON.stringify({ model: 'tinyllama', prompt: text, stream: false })
         });
         const data = await res.json();
         lastAiMessage = data.response;

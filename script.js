@@ -1,147 +1,132 @@
-let userData = JSON.parse(localStorage.getItem('lys_user')) || null;
-let chats = JSON.parse(localStorage.getItem('lys_chats')) || [];
-let currentChatId = null;
-let lastAiMessage = "";
+// --- DEĞİŞKENLER VE 초기화 ---
+let userData = JSON.parse(localStorage.getItem('user')) || null;
+const ngrokUrl = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate";
 
-// Başlangıç Kontrolü
 window.onload = () => {
     if (userData) {
-        document.getElementById('auth-overlay').style.display = 'none';
-        updateProfileUI();
-        renderHistory();
-        startNewChat();
+        authManager.check();
     }
 };
 
-// Kayıt Sistemi
-function handleRegister() {
-    const n = document.getElementById('reg-name').value;
-    const m = document.getElementById('reg-mail').value;
-    const p = document.getElementById('reg-pass').value;
+// --- KAYIT VE OTURUM YÖNETİMİ ---
+const authManager = {
+    register: () => {
+        const name = document.getElementById('reg-name').value;
+        const mail = document.getElementById('reg-mail').value;
+        if (name && mail) {
+            userData = { name, mail };
+            localStorage.setItem('user', JSON.stringify(userData));
+            authManager.check();
+        } else {
+            alert("Lütfen tüm alanları doldurun!");
+        }
+    },
+    check: () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('p-display-name').innerText = user.name;
+            document.getElementById('p-display-mail').innerText = user.mail;
+        }
+    },
+    logout: () => {
+        localStorage.removeItem('user');
+        location.reload();
+    }
+};
 
-    if (!n || !m || !p) return alert("Eksik alan!");
+// --- ARAYÜZ VE SOHBET YÖNETİMİ ---
+const uiManager = {
+    // İnsan gibi yazma efekti
+    typeEffect: async (element, text) => {
+        element.innerHTML = "";
+        for (let i = 0; i < text.length; i++) {
+            element.innerHTML += text.charAt(i);
+            // Rastgele hız simülasyonu (30ms - 70ms arası)
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 40 + 30));
+            document.getElementById('chat-window').scrollTop = 99999;
+        }
+    },
 
-    userData = { name: n, mail: m, pass: p };
-    localStorage.setItem('lys_user', JSON.stringify(userData));
-    
-    document.getElementById('auth-overlay').style.display = 'none';
-    updateProfileUI();
-    renderHistory();
-    startNewChat();
-}
+    sendMessage: async () => {
+        const input = document.getElementById('userInput');
+        const win = document.getElementById('chat-window');
+        const text = input.value.trim();
 
-function updateProfileUI() {
-    document.getElementById('p-name').innerText = userData.name;
-    document.getElementById('p-mail').innerText = userData.mail;
-    document.getElementById('p-pass').innerText = userData.pass;
-    document.getElementById('welcomeText').innerText = `Selam ${userData.name}, bugün ne yapalım?`;
-}
+        if (!text) return;
 
-// Sohbet Yönetimi
-function startNewChat() {
-    currentChatId = Date.now();
-    document.getElementById('chat-window').innerHTML = '';
-    document.getElementById('welcome-hero').style.display = 'block';
-    toggleSidebar(false);
-}
+        // Giriş yazısını gizle
+        document.getElementById('intro-text').style.display = 'none';
 
-async function sendMessage() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
+        // Kullanıcı mesajını ekle
+        win.innerHTML += `<div class="msg user">${text}</div>`;
+        input.value = '';
+        win.scrollTop = 99999;
 
-    document.getElementById('welcome-hero').style.display = 'none';
-    addBubble('user', text);
-    input.value = '';
+        // AI Düşünüyor baloncuğu
+        const aiMsgDiv = document.createElement('div');
+        aiMsgDiv.className = 'msg ai';
+        aiMsgDiv.innerText = "...";
+        win.appendChild(aiMsgDiv);
 
-    try {
-        const res = await fetch('https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate', {
-            method: 'POST',
-            body: JSON.stringify({ model: 'tinyllama', prompt: text, stream: false })
+        try {
+            const response = await fetch(ngrokUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'tinyllama',
+                    prompt: text,
+                    stream: false
+                })
+            });
+
+            const data = await response.json();
+            const aiResponse = data.response;
+
+            // Yazma efektini başlat
+            await uiManager.typeEffect(aiMsgDiv, aiResponse);
+
+        } catch (error) {
+            aiMsgDiv.innerText = "Bağlantı hatası: Sunucuya ulaşılamıyor.";
+            console.error("Hata:", error);
+        }
+    },
+
+    setMode: (name, labelText) => {
+        const label = document.getElementById('mode-label');
+        label.innerText = labelText || name.toUpperCase();
+        label.style.display = 'block';
+        closeGUI('model-gui');
+    },
+
+    changeLang: (lang) => {
+        const isTr = lang === 'tr';
+        document.querySelectorAll('[data-tr]').forEach(el => {
+            el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
         });
-        const data = await res.json();
-        lastAiMessage = data.response;
-        addBubble('ai', data.response);
-        saveChat(text, data.response);
-    } catch (e) {
-        addBubble('ai', "Ollama bağlantısı başarısız!");
+        document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
+        closeGUI('lang-gui');
     }
+};
+
+// --- YARDIMCI FONKSİYONLAR ---
+function openGUI(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    setTimeout(() => el.classList.add('open'), 10);
+    document.getElementById('sidebar').classList.remove('open');
 }
 
-function saveChat(userMsg, aiMsg) {
-    let activeChat = chats.find(c => c.id === currentChatId);
-    if (!activeChat) {
-        activeChat = { id: currentChatId, title: userMsg.substring(0, 25), messages: [] };
-        chats.unshift(activeChat);
-    }
-    activeChat.messages.push({ role: 'user', text: userMsg }, { role: 'ai', text: aiMsg });
-    localStorage.setItem('lys_chats', JSON.stringify(chats));
-    renderHistory();
+function closeGUI(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('open');
+    setTimeout(() => el.style.display = 'none', 600);
 }
 
-function renderHistory() {
-    const cont = document.getElementById('history-container');
-    cont.innerHTML = chats.map(c => `
-        <div class="chat-item" onclick="loadChat(${c.id})">
-            <i class="fa fa-message"></i> ${c.title}
-        </div>
-    `).join('');
-}
-
-function loadChat(id) {
-    const chat = chats.find(c => c.id === id);
-    if (!chat) return;
-    currentChatId = id;
-    document.getElementById('welcome-hero').style.display = 'none';
-    const win = document.getElementById('chat-window');
-    win.innerHTML = '';
-    chat.messages.forEach(m => addBubble(m.role, m.text));
-    toggleSidebar(false);
-}
-
-// Arayüz Kontrolleri
-function toggleSidebar(force) {
-    const sb = document.getElementById('sidebar');
-    sb.classList.toggle('open', force);
-}
-
-function toggleProfile() {
-    document.getElementById('profile-menu').classList.toggle('active');
-}
-
-function logout() {
-    localStorage.clear();
-    location.reload();
-}
-
-// Kopyalama Fonksiyonları
-function showToast(txt) {
-    const t = document.getElementById('toast');
-    t.innerText = txt;
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 2000);
-}
-
-function copyLastAIResponse() {
-    if (!lastAiMessage) return;
-    navigator.clipboard.writeText(lastAiMessage);
-    showToast("Mesaj Kopyalandı!");
-}
-
-function copySiteLink() {
-    navigator.clipboard.writeText(window.location.href);
-    showToast("Sitenin linki kopyalandı!");
-}
-
-function addBubble(role, text) {
-    const win = document.getElementById('chat-window');
-    const div = document.createElement('div');
-    div.className = `msg ${role}`;
-    div.innerText = text;
-    win.appendChild(div);
-    win.scrollTop = win.scrollHeight;
-}
-
+// Enter tuşu ile gönderme
 document.getElementById('userInput').addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        uiManager.sendMessage();
+    }
 });

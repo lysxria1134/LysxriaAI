@@ -1,9 +1,11 @@
-// --- LYSXRIA AI PRO - KESİN ÇALIŞAN SCRIPT ---
+// --- LYSXRIA AI PRO - GÜNCELLENMİŞ SCRIPT ---
 
+// BURAYI GÜNCELLE: Ngrok terminalindeki "Forwarding" yazan https://... ile başlayan linki buraya yapıştır.
+// Not: Linkin sonuna mutlaka /api/generate eklemeyi unutma!
 const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate"; 
 
 const uiManager = {
-    // ChatGPT Yazma Efekti
+    // Yazma Efekti
     typeWriter: (element, text, speed = 10) => {
         let i = 0;
         element.innerText = "";
@@ -27,44 +29,48 @@ const uiManager = {
 
         if (!userText) return;
 
+        // Mesaj gelince tanıtım yazısını kaldır
         if (intro) intro.style.display = 'none';
 
-        // Kullanıcı mesajı
+        // Kullanıcı mesajını ekrana bas
         win.innerHTML += `<div class="msg user">${userText}</div>`;
         inp.value = '';
         win.scrollTop = win.scrollHeight;
 
-        // AI Düşünüyor kutusu
+        // AI Yanıt kutusunu oluştur
         const aiMsgDiv = document.createElement('div');
         aiMsgDiv.className = 'msg ai';
         aiMsgDiv.innerText = "...";
         win.appendChild(aiMsgDiv);
 
         try {
-            // HATA BURADAYDI: fetch komutu eklenmemişti
             const response = await fetch(NGROK_URL, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'ngrok-skip-browser-warning': 'true' 
+                    'Accept': 'application/json',
+                    'ngrok-skip-browser-warning': 'true' // Ngrok uyarı sayfasını atlamak için şart
                 },
                 body: JSON.stringify({ 
-                    model: "tinyllama",
+                    model: "tinyllama", // Bilgisayarında yüklü model ismiyle aynı olmalı
                     prompt: userText,
                     stream: false 
                 })
             });
 
-            if (!response.ok) throw new Error("Sunucu hatası");
+            if (!response.ok) {
+                throw new Error(`Sunucu hatası: ${response.status}`);
+            }
 
             const data = await response.json();
-            const finalReply = data.response || data.reply || "Cevap boş döndü.";
+            // Ollama'dan gelen ana metin 'response' içindedir
+            const finalReply = data.response || "Yanıt alınamadı.";
             
             uiManager.typeWriter(aiMsgDiv, finalReply);
 
         } catch (error) {
-            console.error("Hata:", error);
-            aiMsgDiv.innerText = "Bağlantı hatası! Lütfen Ngrok'un açık olduğundan ve URL'nin doğru olduğundan emin ol.";
+            console.error("Detaylı Hata:", error);
+            aiMsgDiv.innerText = "Bağlantı kurulamadı. Ngrok linki değişmiş olabilir veya Ollama kapalı.";
             aiMsgDiv.style.color = "#ff4d4d";
         }
     },
@@ -75,7 +81,7 @@ const uiManager = {
             label.innerText = labelText || name.toUpperCase();
             label.style.display = 'block';
         }
-        closeGUI('model-gui');
+        if (typeof closeGUI === 'function') closeGUI('model-gui');
     },
 
     changeLang: (lang) => {
@@ -83,8 +89,9 @@ const uiManager = {
         document.querySelectorAll('[data-tr]').forEach(el => {
             el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
         });
-        document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
-        closeGUI('lang-gui');
+        const inp = document.getElementById('userInput');
+        if (inp) inp.placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
+        if (typeof closeGUI === 'function') closeGUI('lang-gui');
     },
 
     rate: (num) => {
@@ -95,16 +102,19 @@ const uiManager = {
     share: (platform) => {
         if(platform === 'whatsapp') window.open('https://wa.me/');
         else alert('Link kopyalandı!');
-        closeGUI('share-gui');
+        if (typeof closeGUI === 'function') closeGUI('share-gui');
     }
 };
 
-// Enter Tuşu Dinleyicisi
+// Sayfa yüklendiğinde Enter tuşunu aktif et
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('userInput')?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            uiManager.sendMessage();
-        }
-    });
+    const inputField = document.getElementById('userInput');
+    if (inputField) {
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                uiManager.sendMessage();
+            }
+        });
+    }
 });

@@ -1,173 +1,147 @@
-// ===== LYSXRIA AI PRO - SCRIPT.JS =====
-// Ngrok URL'ini buraya yapıştır
-const NGROK_URL = "https://lobeliaceous-nonintrospectively-irene.ngrok-free.dev/api/generate";
+let userData = JSON.parse(localStorage.getItem('lys_user')) || null;
+let chats = JSON.parse(localStorage.getItem('lys_chats')) || [];
+let currentChatId = null;
+let lastAiMessage = "";
 
-// ===== GENIŞLETILMIŞ UI MANAGER =====
-const uiManager = {
-    // Yazma Efekti (TypeWriter)
-    typeWriter: (element, text, speed = 20) => {
-        let i = 0;
-        element.innerHTML = "";
-        element.style.color = "#ececf1";
-        
-        function type() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(type, speed);
-                const win = document.getElementById('chat-window');
-                if(win) win.scrollTop = win.scrollHeight;
-            }
-        }
-        type();
-    },
-
-    // AI'ya Mesaj Gönder
-    sendMessage: async () => {
-        const inp = document.getElementById('userInput');
-        const win = document.getElementById('chat-window');
-        const intro = document.getElementById('intro-text');
-        const userText = inp.value.trim();
-
-        if (!userText) return;
-
-        // Tanıtım yazısını gizle
-        if (intro) intro.style.display = 'none';
-
-        // Kullanıcı mesajını göster
-        const userMsgDiv = document.createElement('div');
-        userMsgDiv.className = 'msg user';
-        userMsgDiv.innerText = userText;
-        win.appendChild(userMsgDiv);
-        
-        inp.value = '';
-        win.scrollTop = win.scrollHeight;
-
-        // "Düşünüyor..." mesajı göster
-        const aiMsgDiv = document.createElement('div');
-        aiMsgDiv.className = 'msg ai';
-        aiMsgDiv.innerHTML = "⏳ Düşünüyor...";
-        win.appendChild(aiMsgDiv);
-        win.scrollTop = win.scrollHeight;
-
-        try {
-            // Ollama/Ngrok'a istek gönder
-            const response = await fetch(NGROK_URL, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'ngrok-skip-browser-warning': 'true'
-                },
-                body: JSON.stringify({ 
-                    model: "tinyllama",
-                    prompt: userText,
-                    stream: false 
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP Error ${response.status}`);
-            }
-
-            const data = await response.json();
-            const finalReply = data.response || data.reply || "Cevap alınamadı.";
-            
-            // Yazma efekti ile cevabı göster
-            uiManager.typeWriter(aiMsgDiv, finalReply);
-
-        } catch (error) {
-            console.error("Ollama Hata:", error);
-            aiMsgDiv.innerHTML = `<span style="color: #ff6b6b;">❌ Bağlantı Hatası!</span>\n\n${error.message}\n\n<span style="color: #ffa500;">💡 Kontrol et:</span>\n• Ollama açık mı?\n• Ngrok çalışıyor mu?\n• URL doğru mu?`;
-            aiMsgDiv.style.whiteSpace = 'pre-wrap';
-        }
-    },
-
-    // Mod Seç
-    setMode: (name, labelText) => {
-        const label = document.getElementById('mode-label');
-        if(label) {
-            label.innerText = labelText || name.toUpperCase();
-            label.style.display = 'block';
-        }
-        closeGUI('model-gui');
-    },
-
-    // Dil Değiştir
-    changeLang: (lang) => {
-        const isTr = lang === 'tr';
-        document.querySelectorAll('[data-tr]').forEach(el => {
-            el.innerText = isTr ? el.getAttribute('data-tr') : el.getAttribute('data-en');
-        });
-        document.getElementById('userInput').placeholder = isTr ? 'Mesajınızı buraya bırakın...' : 'Leave your message here...';
-        closeGUI('lang-gui');
-    },
-
-    // Yıldızla Puanla
-    rate: (num) => {
-        const stars = document.querySelectorAll('.star');
-        stars.forEach((s, i) => {
-            if(i < num) s.classList.add('active');
-            else s.classList.remove('active');
-        });
-    },
-
-    // Paylaş
-    share: (platform) => {
-        const url = window.location.href;
-        if(platform === 'whatsapp') {
-            window.open(`https://wa.me/?text=${encodeURIComponent('Lysxria AI PRO: ' + url)}`);
-        } else if(platform === 'twitter') {
-            window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=Lysxria AI PRO`);
-        } else if(platform === 'instagram') {
-            alert('Bağlantı kopyalandı! Instagram\'da paylaşabilirsin.\n\n' + url);
-        }
-        closeGUI('share-gui');
+// Başlangıç Kontrolü
+window.onload = () => {
+    if (userData) {
+        document.getElementById('auth-overlay').style.display = 'none';
+        updateProfileUI();
+        renderHistory();
+        startNewChat();
     }
 };
 
-// ===== GUI FONKSİYONLARI =====
-function openGUI(id) {
-    const el = document.getElementById(id);
-    el.style.display = 'block';
-    setTimeout(() => el.classList.add('open'), 10);
-    document.getElementById('sidebar')?.classList.remove('open');
+// Kayıt Sistemi
+function handleRegister() {
+    const n = document.getElementById('reg-name').value;
+    const m = document.getElementById('reg-mail').value;
+    const p = document.getElementById('reg-pass').value;
+
+    if (!n || !m || !p) return alert("Eksik alan!");
+
+    userData = { name: n, mail: m, pass: p };
+    localStorage.setItem('lys_user', JSON.stringify(userData));
+    
+    document.getElementById('auth-overlay').style.display = 'none';
+    updateProfileUI();
+    renderHistory();
+    startNewChat();
 }
 
-function closeGUI(id) {
-    const el = document.getElementById(id);
-    el.classList.remove('open');
-    setTimeout(() => el.style.display = 'none', 600);
+function updateProfileUI() {
+    document.getElementById('p-name').innerText = userData.name;
+    document.getElementById('p-mail').innerText = userData.mail;
+    document.getElementById('p-pass').innerText = userData.pass;
+    document.getElementById('welcomeText').innerText = `Selam ${userData.name}, bugün ne yapalım?`;
 }
 
-// ===== İNTERNET SİNYALİ ANİMASYONU =====
-setInterval(() => {
-    const bars = document.querySelectorAll('.bar');
-    const strength = Math.floor(Math.random() * 4) + 1;
-    bars.forEach((b, i) => {
-        b.className = 'bar bar' + (i + 1);
-        if(i < strength) {
-            if(strength === 1) b.classList.add('red');
-            else b.classList.add('green');
-        }
-    });
-}, 3000);
+// Sohbet Yönetimi
+function startNewChat() {
+    currentChatId = Date.now();
+    document.getElementById('chat-window').innerHTML = '';
+    document.getElementById('welcome-hero').style.display = 'block';
+    toggleSidebar(false);
+}
 
-// ===== SIDEBAR KAPATMA =====
-window.onclick = (e) => {
-    if(e.target.id === 'chat-window' || e.target.id === 'main') {
-        document.getElementById('sidebar')?.classList.remove('open');
-    }
-};
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
 
-// ===== ENTER TUŞU DÖNÜŞTÜRÜCÜSİ =====
-document.addEventListener('DOMContentLoaded', () => {
-    const userInput = document.getElementById('userInput');
-    if (userInput) {
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                uiManager.sendMessage();
-            }
+    document.getElementById('welcome-hero').style.display = 'none';
+    addBubble('user', text);
+    input.value = '';
+
+    try {
+        const res = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            body: JSON.stringify({ model: 'llama3', prompt: text, stream: false })
         });
+        const data = await res.json();
+        lastAiMessage = data.response;
+        addBubble('ai', data.response);
+        saveChat(text, data.response);
+    } catch (e) {
+        addBubble('ai', "Ollama bağlantısı başarısız!");
     }
+}
+
+function saveChat(userMsg, aiMsg) {
+    let activeChat = chats.find(c => c.id === currentChatId);
+    if (!activeChat) {
+        activeChat = { id: currentChatId, title: userMsg.substring(0, 25), messages: [] };
+        chats.unshift(activeChat);
+    }
+    activeChat.messages.push({ role: 'user', text: userMsg }, { role: 'ai', text: aiMsg });
+    localStorage.setItem('lys_chats', JSON.stringify(chats));
+    renderHistory();
+}
+
+function renderHistory() {
+    const cont = document.getElementById('history-container');
+    cont.innerHTML = chats.map(c => `
+        <div class="chat-item" onclick="loadChat(${c.id})">
+            <i class="fa fa-message"></i> ${c.title}
+        </div>
+    `).join('');
+}
+
+function loadChat(id) {
+    const chat = chats.find(c => c.id === id);
+    if (!chat) return;
+    currentChatId = id;
+    document.getElementById('welcome-hero').style.display = 'none';
+    const win = document.getElementById('chat-window');
+    win.innerHTML = '';
+    chat.messages.forEach(m => addBubble(m.role, m.text));
+    toggleSidebar(false);
+}
+
+// Arayüz Kontrolleri
+function toggleSidebar(force) {
+    const sb = document.getElementById('sidebar');
+    sb.classList.toggle('open', force);
+}
+
+function toggleProfile() {
+    document.getElementById('profile-menu').classList.toggle('active');
+}
+
+function logout() {
+    localStorage.clear();
+    location.reload();
+}
+
+// Kopyalama Fonksiyonları
+function showToast(txt) {
+    const t = document.getElementById('toast');
+    t.innerText = txt;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2000);
+}
+
+function copyLastAIResponse() {
+    if (!lastAiMessage) return;
+    navigator.clipboard.writeText(lastAiMessage);
+    showToast("Mesaj Kopyalandı!");
+}
+
+function copySiteLink() {
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Sitenin linki kopyalandı!");
+}
+
+function addBubble(role, text) {
+    const win = document.getElementById('chat-window');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    div.innerText = text;
+    win.appendChild(div);
+    win.scrollTop = win.scrollHeight;
+}
+
+document.getElementById('userInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
